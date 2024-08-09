@@ -1,21 +1,36 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
-use App\Http\Controllers\PageController;
 use App\Http\Controllers\UserController;
-
-Route::get('/',[PageController::class,'index'])->name('page.all');
-
-Route::get('/posts',[PostController::class,'index'])->name('post.all');
-Route::get('/posts/add',[PostController::class,'add'])->name('post.add');
-Route::post('/posts/store',[PostController::class,'store'])->name('post.store');
-Route::get('/posts/edit-post/{id}',[PostController::class,'edit'])->name('post.edit');
-Route::post('/posts/update/{id}',[PostController::class,'update'])->name('post.update');
-Route::get('/posts/{id}',[PostController::class,'delete'])->name('post.delete');
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AdminController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 
-Route::get('/users/register',[UserController::class,'register'])->name('registerxx');
-Route::post('/users/store',[UserController::class,'store'])->name('user.store');
-Route::get('users/showLoginForm',[UserController::class,'showLoginForm'])->name('user.showLogin');
-Route::post('/users/login',[UserController::class,'login'])->name('user.login');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+Route::get('/users/register', [UserController::class, 'register'])//hien ra form dang ky
+            ->name('users.register');
+Route::get('/users/login', [UserController::class, 'login'])//hien ra form dang nhap
+            ->name('users.login');            
+
+Route::post('/users/login', [UserController::class, 'signin'])//sau khi bam dang nhap
+            ->name('users.signin');
+
+Route::post('/users/register', [UserController::class, 'store'])//sau khi bam dang ky
+            ->name('users.store');
+
+Route::get('/posts/{id}', [HomeController::class, 'show'])->name('posts.show');
+
+//http://localhost:port/posts
+Route::get('/posts', [PostController::class, 'index']);
+
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/'); // Redirect to homepage or login page after logout
+})->name('logout');
+
+Route::group(['middleware' => ['auth']], function () {
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+});

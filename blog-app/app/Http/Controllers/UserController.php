@@ -1,76 +1,70 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Auth;
+
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
+
+
 
 class UserController extends Controller
 {
-    //
+    
+    /**
+     * Show the form for creating a new resource.
+     */
     public function register()
     {
-        echo 'haha';
-        return view("users.register");
+        return view('users.register');
     }
     public function store(Request $request)
     {
-        $rules = [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ];
-        $messages = [
-            'name.required' => 'Name is required',
-            'email.required' => 'Email is required',
-            'email.email' => 'Email must be a valid email address',
-            'email.unique' => 'Email has already been taken',
-            'password.required' => 'Password is required',
-            'password.min' => 'Password must be at least 8 characters',
-            'password.confirmed' => 'Password confirmation does not match',
-        ];
+        // When user press "Register"
+        //$request => $_POST
+        $request->validate([
+            'email' => 'required|email|unique:users,email',
+            'fullname' => 'required|max:200',
+            'password' => 'required|min:8|confirmed',
+        ]);
+        // Create a new user
+        User::create([
+            'email' => $request->email,
+            'fullname' => $request->fullname,
+            'role' => 'user',
+            'password' => $request->password,
+        ]);        
 
-        $validator = Validator::make($request->all(), $rules, $messages);
-
-        // If validation fails, redirect back with errors and old input
-        if ($validator->fails()) {
-            return redirect()->back()
-                             ->withErrors($validator)
-                             ->withInput();
-        }
-
-        $user = new User;
-        $user->email = $request->input('email');
-        $user->password = Hash::make($request->input('password'));
-        $user->name = $request->input('name');
-        $user->save();
-        return redirect()->back()->with("success", "Đăng ký user thành công");
+        // Redirect to a success page
+        //return redirect()->route('users.register')->with('success', 'User registered successfully!');
+        return redirect()->route('users.login')->with('success', 'User registered successfully!');
     }
-    public function showLoginForm(){
+    public function login() {//giao dien login
         return view('users.login');
     }
-    public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
+
+    public function signin(Request $request)
+    {        
+        // Validate the incoming request data
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'               
         ]);
 
+        // Attempt to authenticate the user
+        $credentials = $request->only('email', 'password');
         if (Auth::attempt($credentials)) {
+            // Authentication passed, save user data to session
             $request->session()->regenerate();
-            
-            // Store user_id in session
-            $user = Auth::user();
-            $request->session()->put('user_id', $user->id);
-            
-            return redirect()->route('post.all')->with('status','Dang nhap thanh cong'); // Replace 'dashboard' with the intended URL
+
+            // Redirect to a success page
+            return redirect()->route('home')->with('success', 'Login user successfully!');
         }
 
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->withInput();
+        // Authentication failed, redirect back with error
+        return redirect()->route('users.login')->withErrors([
+            'email' => 'Email and password not correct.',
+        ])->withInput($request->except('password'));
     }
-
 }

@@ -3,48 +3,65 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\Post;
 
 class PostController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $posts = Post::all();        
-        return view("posts.index",[
-            'posts' => $posts
-        ]);
+        $posts = Post::all();
+        //send data from controller to view
+        return view('posts.index', compact('posts'));
     }
 
-    public function add(){
-       return view("posts.create");
-    }
-    public function store(Request $request){
-        $post = new Post;
-        $post->title = $request->input('title');
-        $post ->content = $request->input('body');
-        $post ->user_id = $request->input('user_id');
-        $post->save();
-        return redirect()->route('post.all')->with('status','Them bai viet thanh cong');
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
     }
 
-    public function edit($id){
-        $post = Post::find($id);
-        return view('posts.edit',compact('post'));
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        //
     }
 
-    
-    public function update(Request $request,$id){
-        $post = Post::find($id);
-        $post->title = $request->input('title');
-        $post -> content = $request->input('body');
-        $post->update();
-        return redirect()->route('post.all')->with('status','Cap nhat bai viet thanh cong');
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
     }
 
-    public function delete($id){
-        $post = Post::find($id);
-        $post->delete();
-        return redirect()->back()->with('status','Xoa bai viet thanh cong');
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
     }
 }
